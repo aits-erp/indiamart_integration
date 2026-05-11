@@ -3,9 +3,6 @@ import json
 
 
 def get_or_create_customer(customer_name, mobile):
-    """
-    Create customer if not exists
-    """
 
     existing_customer = frappe.db.get_value(
         "Customer",
@@ -30,9 +27,6 @@ def get_or_create_customer(customer_name, mobile):
 
 
 def create_lead(data, mobile):
-    """
-    Create Lead
-    """
 
     lead_name = (
         data.get("SENDER_NAME")
@@ -58,7 +52,10 @@ def create_lead(data, mobile):
         or ""
     )
 
-    # Check existing lead
+    # ---------------------------------------------------
+    # CHECK EXISTING LEAD
+    # ---------------------------------------------------
+
     existing_lead = frappe.db.get_value(
         "Lead",
         {"mobile_no": mobile},
@@ -68,12 +65,20 @@ def create_lead(data, mobile):
     if existing_lead:
         return existing_lead
 
+    # ---------------------------------------------------
+    # CREATE LEAD
+    # ---------------------------------------------------
+
     lead = frappe.get_doc({
         "doctype": "Lead",
         "lead_name": lead_name,
         "mobile_no": mobile,
         "email_id": email,
-        "notes": f"""
+
+        # IMPORTANT:
+        # use normal text field only
+        # do NOT use child table fields
+        "description": f"""
 Product: {product}
 
 Message:
@@ -82,6 +87,7 @@ Message:
     })
 
     lead.insert(ignore_permissions=True)
+
     frappe.db.commit()
 
     return lead.name
@@ -89,29 +95,20 @@ Message:
 
 @frappe.whitelist(allow_guest=True)
 def webhook(**kwargs):
-    """
-    IndiaMART Webhook API
-    """
 
     try:
-
-        # ---------------------------------------------------
-        # LOG FULL PAYLOAD
-        # ---------------------------------------------------
 
         frappe.logger().info(f"IndiaMART Payload: {kwargs}")
 
         # ---------------------------------------------------
-        # HANDLE RESPONSE WRAPPER
+        # RESPONSE WRAPPER
         # ---------------------------------------------------
 
         lead_data = kwargs.get("RESPONSE")
 
-        # Sometimes RESPONSE is stringified JSON
         if isinstance(lead_data, str):
             lead_data = json.loads(lead_data)
 
-        # Fallback
         if not lead_data:
             lead_data = kwargs
 
@@ -127,6 +124,7 @@ def webhook(**kwargs):
         )
 
         if not mobile:
+
             frappe.log_error(
                 title="IndiaMART Missing Mobile",
                 message=json.dumps(lead_data, indent=2)
@@ -158,7 +156,7 @@ def webhook(**kwargs):
         )
 
         # ---------------------------------------------------
-        # CREATE CUSTOMER
+        # CUSTOMER
         # ---------------------------------------------------
 
         customer = get_or_create_customer(
@@ -167,17 +165,13 @@ def webhook(**kwargs):
         )
 
         # ---------------------------------------------------
-        # CREATE LEAD
+        # LEAD
         # ---------------------------------------------------
 
         lead = create_lead(
             lead_data,
             mobile
         )
-
-        # ---------------------------------------------------
-        # SUCCESS
-        # ---------------------------------------------------
 
         return {
             "status": "success",
@@ -197,10 +191,6 @@ def webhook(**kwargs):
             "status": "error",
             "message": str(e)
         }
-
-
-
-
 # import frappe
 
 # @frappe.whitelist(allow_guest=True)
