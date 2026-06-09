@@ -49,8 +49,24 @@ def create_lead(data, mobile):
     product = (
         data.get("QUERY_PRODUCT_NAME")
         or data.get("query_product_name")
+        or data.get("PRODUCT_NAME")
         or ""
     )
+
+    qty = (
+        data.get("QUANTITY")
+        or data.get("quantity")
+        or data.get("QTY")
+        or ""
+    )
+
+    value = (
+        data.get("VALUE")
+        or data.get("value")
+        or data.get("ORDER_VALUE")
+        or ""
+    )
+
 
     # ---------------------------------------------------
     # CHECK EXISTING LEAD
@@ -74,13 +90,17 @@ def create_lead(data, mobile):
         "lead_name": lead_name,
         "mobile_no": mobile,
         "email_id": email,
-
+       # Custom Fields
+        "custom_product_name": product,
+        "custom_qty": qty,
+        "custom_value": value,
         # IMPORTANT:
         # use normal text field only
         # do NOT use child table fields
         "description": f"""
 Product: {product}
-
+Quantity: {qty}
+Value: {value}
 Message:
 {message}
 """
