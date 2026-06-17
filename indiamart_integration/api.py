@@ -67,10 +67,40 @@ def create_lead(data, mobile):
         or ""
     )
 
+    company_name = (
+        data.get("COMPANY_NAME")
+        or data.get("GLUSR_USR_COMPANYNAME")
+        or ""
+    )
 
-    # ---------------------------------------------------
-    # CHECK EXISTING LEAD
-    # ---------------------------------------------------
+    no_of_employees = (
+        data.get("EMPLOYEE_COUNT")
+        or data.get("NO_OF_EMPLOYEES")
+        or ""
+    )
+
+    gst_no = (
+        data.get("GST_NO")
+        or data.get("GSTIN")
+        or ""
+    )
+
+    address_html = (
+        data.get("SENDER_ADDRESS")
+        or data.get("ADDRESS")
+        or ""
+    )
+
+    qualification_status = (
+        data.get("QUALIFICATION_STATUS")
+        or ""
+    )
+
+    campaign_name = (
+        data.get("QUERY_SOURCE")
+        or data.get("CAMPAIGN_NAME")
+        or ""
+    )
 
     existing_lead = frappe.db.get_value(
         "Lead",
@@ -81,29 +111,36 @@ def create_lead(data, mobile):
     if existing_lead:
         return existing_lead
 
-    # ---------------------------------------------------
-    # CREATE LEAD
-    # ---------------------------------------------------
-
     lead = frappe.get_doc({
         "doctype": "Lead",
         "lead_name": lead_name,
         "mobile_no": mobile,
         "email_id": email,
-       # Custom Fields
-        "custom_product_name": product,
-        "custom_qty": qty,
-        "custom_value": value,
-        # IMPORTANT:
-        # use normal text field only
-        # do NOT use child table fields
+
+        "company_name": company_name,
+        "no_of_employees": no_of_employees,
+        "custom_gst_no": gst_no,
+        "address_html": address_html,
+        "custom_address": address_html,
+        "qualification_status": qualification_status,
+        "campaign_name": campaign_name,
+        "company": company_name,
+
         "description": f"""
 Product: {product}
 Quantity: {qty}
 Value: {value}
+
 Message:
 {message}
 """
+    })
+
+    # Child Table Row
+    lead.append("custom_product_details", {
+        "item": product,
+        "qty": qty,
+        "value": value
     })
 
     lead.insert(ignore_permissions=True)
@@ -111,6 +148,93 @@ Message:
     frappe.db.commit()
 
     return lead.name
+
+
+# def create_lead(data, mobile):
+
+#     lead_name = (
+#         data.get("SENDER_NAME")
+#         or data.get("sender_name")
+#         or "Unknown"
+#     )
+
+#     email = (
+#         data.get("SENDER_EMAIL")
+#         or data.get("sender_email")
+#         or ""
+#     )
+
+#     message = (
+#         data.get("QUERY_MESSAGE")
+#         or data.get("query_message")
+#         or ""
+#     )
+
+#     product = (
+#         data.get("QUERY_PRODUCT_NAME")
+#         or data.get("query_product_name")
+#         or data.get("PRODUCT_NAME")
+#         or ""
+#     )
+
+#     qty = (
+#         data.get("QUANTITY")
+#         or data.get("quantity")
+#         or data.get("QTY")
+#         or ""
+#     )
+
+#     value = (
+#         data.get("VALUE")
+#         or data.get("value")
+#         or data.get("ORDER_VALUE")
+#         or ""
+#     )
+
+
+#     # ---------------------------------------------------
+#     # CHECK EXISTING LEAD
+#     # ---------------------------------------------------
+
+#     existing_lead = frappe.db.get_value(
+#         "Lead",
+#         {"mobile_no": mobile},
+#         "name"
+#     )
+
+#     if existing_lead:
+#         return existing_lead
+
+#     # ---------------------------------------------------
+#     # CREATE LEAD
+#     # ---------------------------------------------------
+
+#     lead = frappe.get_doc({
+#         "doctype": "Lead",
+#         "lead_name": lead_name,
+#         "mobile_no": mobile,
+#         "email_id": email,
+#        # Custom Fields
+#         "custom_product_name": product,
+#         "custom_qty": qty,
+#         "custom_value": value,
+#         # IMPORTANT:
+#         # use normal text field only
+#         # do NOT use child table fields
+#         "description": f"""
+# Product: {product}
+# Quantity: {qty}
+# Value: {value}
+# Message:
+# {message}
+# """
+#     })
+
+#     lead.insert(ignore_permissions=True)
+
+#     frappe.db.commit()
+
+#     return lead.name
 
 
 @frappe.whitelist(allow_guest=True)
