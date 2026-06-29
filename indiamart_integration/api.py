@@ -66,7 +66,7 @@ def create_lead(data, mobile):
         or data.get("value")
         or data.get("ORDER_VALUE")
 		or data.get("rate")
-		or data.get(order_value")
+		or data.get("order_value")
         or ""
     )
 
