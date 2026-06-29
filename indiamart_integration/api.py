@@ -57,6 +57,7 @@ def create_lead(data, mobile):
         data.get("QUANTITY")
         or data.get("quantity")
         or data.get("QTY")
+		or data.get("qty")
         or ""
     )
 
@@ -64,6 +65,8 @@ def create_lead(data, mobile):
         data.get("VALUE")
         or data.get("value")
         or data.get("ORDER_VALUE")
+		or data.get("rate")
+		or data.get(order_value")
         or ""
     )
 
@@ -82,6 +85,8 @@ def create_lead(data, mobile):
     gst_no = (
         data.get("GST_NO")
         or data.get("GSTIN")
+		or data.get("gst_no")
+		or data.get("gstin")
         or ""
     )
 
